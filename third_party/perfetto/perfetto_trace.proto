@@ -1,0 +1,157 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// Minimal subset of the Perfetto trace protobuf schema, sufficient for NvTrace to
+// emit native Perfetto (.perfetto-trace) files.
+//
+// The message and field numbers below MUST match the upstream Perfetto schema
+// (https://github.com/google/perfetto, protos/perfetto/trace/...) because they
+// define the wire format that Perfetto Trace Processor parses. Only the fields
+// NvTrace actually writes are declared here. Additional fields can be added later
+// as long as their numbers keep matching upstream.
+
+syntax = "proto2";
+
+package perfetto.protos;
+
+// protos/perfetto/trace/trace.proto
+message Trace {
+    repeated TracePacket packet = 1;
+}
+
+// protos/perfetto/trace/interned_data/interned_data.proto
+message EventCategory {
+    optional uint64 iid = 1;
+    optional string name = 2;
+}
+
+message EventName {
+    optional uint64 iid = 1;
+    optional string name = 2;
+}
+
+message DebugAnnotationName {
+    optional uint64 iid = 1;
+    optional string name = 2;
+}
+
+message InternedString {
+    optional uint64 iid = 1;
+    optional bytes str = 2;
+}
+
+message InternedData {
+    repeated EventCategory event_categories = 1;
+    repeated EventName event_names = 2;
+    repeated DebugAnnotationName debug_annotation_names = 3;
+    repeated InternedString debug_annotation_string_values = 29;
+}
+
+// protos/perfetto/trace/track_event/debug_annotation.proto
+message DebugAnnotation {
+    optional uint64 name_iid = 1;
+    oneof value {
+        bool bool_value = 2;
+        uint64 uint_value = 3;
+        int64 int_value = 4;
+        double double_value = 5;
+        string string_value = 6;
+        uint64 pointer_value = 7;
+        uint64 string_value_iid = 17;
+    }
+}
+
+// protos/perfetto/trace/track_event/*.proto
+message CounterDescriptor {
+    optional string unit_name = 6;
+}
+
+message TrackDescriptor {
+    optional uint64 uuid = 1;
+    optional string name = 2;
+    optional uint64 parent_uuid = 5;
+    optional CounterDescriptor counter = 8;
+
+    enum ChildTracksOrdering {
+        UNKNOWN = 0;
+        LEXICOGRAPHIC = 1;
+        CHRONOLOGICAL = 2;
+        EXPLICIT = 3;
+    }
+    optional ChildTracksOrdering child_ordering = 11;
+
+    optional int32 sibling_order_rank = 12;
+}
+
+// protos/perfetto/trace/track_event/track_event.proto
+message TrackEvent {
+    repeated uint64 category_iids = 3;
+
+    optional uint64 name_iid = 10;
+
+    enum Type {
+        TYPE_UNSPECIFIED = 0;
+        TYPE_SLICE_BEGIN = 1;
+        TYPE_SLICE_END = 2;
+        TYPE_INSTANT = 3;
+        TYPE_COUNTER = 4;
+    }
+    optional Type type = 9;
+
+    optional uint64 track_uuid = 11;
+
+    optional double double_counter_value = 44;
+
+    repeated fixed64 flow_ids = 47;
+    repeated fixed64 terminating_flow_ids = 48;
+
+    optional uint64 correlation_id = 52;
+
+    repeated DebugAnnotation debug_annotations = 4;
+}
+
+// protos/perfetto/common/builtin_clock.proto
+enum BuiltinClock {
+    BUILTIN_CLOCK_UNKNOWN = 0;
+    BUILTIN_CLOCK_REALTIME = 1;
+    BUILTIN_CLOCK_REALTIME_COARSE = 2;
+    BUILTIN_CLOCK_MONOTONIC = 3;
+    BUILTIN_CLOCK_MONOTONIC_COARSE = 4;
+    BUILTIN_CLOCK_MONOTONIC_RAW = 5;
+    BUILTIN_CLOCK_BOOTTIME = 6;
+}
+
+// protos/perfetto/trace/clock_snapshot.proto
+message ClockSnapshot {
+    message Clock {
+        optional uint32 clock_id = 1;
+        optional uint64 timestamp = 2;
+    }
+    repeated Clock clocks = 1;
+    optional BuiltinClock primary_trace_clock = 2;
+}
+
+// protos/perfetto/trace/trace_packet.proto
+message TracePacket {
+    optional uint64 timestamp = 8;
+    optional uint32 timestamp_clock_id = 58;
+
+    oneof data {
+        ClockSnapshot clock_snapshot = 6;
+        TrackEvent track_event = 11;
+        TrackDescriptor track_descriptor = 60;
+    }
+
+    optional InternedData interned_data = 12;
+
+    enum SequenceFlags {
+        SEQ_UNSPECIFIED = 0;
+        SEQ_INCREMENTAL_STATE_CLEARED = 1;
+        SEQ_NEEDS_INCREMENTAL_STATE = 2;
+    }
+    optional uint32 sequence_flags = 13;
+
+    optional uint32 trusted_packet_sequence_id = 10;
+}

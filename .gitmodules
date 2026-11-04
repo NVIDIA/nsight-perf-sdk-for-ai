@@ -1,0 +1,18 @@
+[submodule "nsight-perf-daemon"]
+	path = nsight-perf-daemon
+	url = https://github.com/NVIDIA/nsight-perf-daemon.git
+[submodule "nvtrace-client"]
+	path = nvtrace-client
+	url = https://github.com/NVIDIA/nvtrace-client.git
+[submodule "nvtrace-samples-cuda"]
+	path = nvtrace-samples-cuda
+	url = https://github.com/NVIDIA/nvtrace-samples-cuda.git
+[submodule "nvtrace-tools"]
+	path = nvtrace-tools
+	url = https://github.com/NVIDIA/nvtrace-tools.git
+[submodule "nvperf-core"]
+	path = nvperf-core
+	url = https://github.com/NVIDIA/nvperf-core.git
+[submodule "NVTX"]
+	path = NVTX
+	url = https://github.com/NVIDIA/NVTX.git
