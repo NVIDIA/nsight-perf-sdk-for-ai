@@ -132,7 +132,7 @@ endfunction()
 if(PROJECT_IS_TOP_LEVEL)
     include(FetchContent)
 
-    set(NSIGHT_PERF_DAEMON_VERSION beta-preview)
+    set(NSIGHT_PERF_DAEMON_VERSION beta-preview-update1)
 
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
